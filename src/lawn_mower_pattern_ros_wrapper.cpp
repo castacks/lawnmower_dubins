@@ -20,6 +20,7 @@ visualization_msgs::Marker ca::LawnMowerPatternROS::GetPatternMarker(std::vector
     m.pose.orientation.w = 1.0;
 
     m.color.r = 0.0; m.color.g = 0.0; m.color.b = 1.0; m.color.a = 1.0;
+    m.scale.x = 1.0; m.scale.y = 0.0; m.scale.z = 0.0;
     for(size_t i=0; i<path.size(); i++)
     {
         geometry_msgs::Point p;
@@ -45,7 +46,7 @@ ca::LawnMowerPatternROS::LawnMowerPatternROS(ros::NodeHandle &n)
     double box_x, box_y, altitude, row_distance,temporal_res,radius,velocity;
     box_x = box_y =100; row_distance = 10; temporal_res = 0.3; radius = 5; velocity = 1;
      _lawn_mower_pattern = new ca::LawnMowerPattern(box_x,box_y,altitude,row_distance,temporal_res,radius,velocity);
-
+    _frame = "world";
      _pattern_publisher = n.advertise<visualization_msgs::Marker>("coverage_trajectory", 1000);;
      _marker_publisher = n.advertise<visualization_msgs::Marker>("coverage_marker", 1000);
 }

@@ -111,6 +111,7 @@ include_directories(
    src/lawn_mower_pattern_ros_wrapper.cpp
 )
 
+add_executable(example src/example.cpp)
 ## Declare a cpp executable
 # add_executable(lawn_mower_pattern_node src/lawn_mower_pattern_node.cpp)
 
@@ -121,10 +122,18 @@ include_directories(
 ## Specify libraries to link a library or executable target against
  target_link_libraries(lawn_mower_pattern
    ${catkin_LIBRARIES}
- )
+)
 
  target_link_libraries(lawn_mower_pattern_ros_wrapper
    ${catkin_LIBRARIES}
+   lawn_mower_pattern
+ )
+
+
+ target_link_libraries(example
+   ${catkin_LIBRARIES}
+   lawn_mower_pattern
+   lawn_mower_pattern_ros_wrapper
  )
 
 #############
