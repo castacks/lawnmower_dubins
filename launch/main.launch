@@ -1,25 +1,25 @@
 <!-- /-->
 <launch>
-  <node pkg="lawn_mower_pattern" type="lawn_mower_pattern_generator" name="lawn_mower_pattern">
+  <node pkg="lawn_mower_pattern" type="lawn_mower_pattern_generator" name="lawn_mower_pattern" output="screen">
 		  <param name="work_frame" value="/world" />
 		  <param name="trajectory_topic" value="/local_planner/trajectory" /> 
 		  <param name="visualization_topic" value="coverage_trajectory" />
-		  <param name="odo_topic" value="/mikrokopter/odometry" /> 
-    	  <param name="publish_trajectory_topic" value="publish_trajectory" />
+		  <param name="odo_topic" value="/mk_model/odometry" /> 
+          <param name="publish_trajectory_topic" value="publish_trajectory" />
 
 		  <param name="r" value="0.0"/>
 		  <param name="g" value="1.0" /> 
 		  <param name="b" value="0.0" />
 		  <param name="a" value="1.0" />
-		  <param name="scale" value="0.1" />
+		  <param name="scale" value="0.01" />
 		  <param name="namespace" value="trajectory" />
 
 		  <param name="box_x" value="2.0"/>
 		  <param name="box_y" value="2.0" /> 
 		  <param name="row_distance" value="1.0" />
 		  <param name="temporal_res" value="0.3" />
-		  <param name="radius" value="0.5" />
-		  <param name="velocity" value="0.2" /> 
+		  <param name="radius" value="2.0" />
+		  <param name="velocity" value="0.1" />
+		  <param name="altitude" value="0.0" /> 
    </node>
 </launch>
-

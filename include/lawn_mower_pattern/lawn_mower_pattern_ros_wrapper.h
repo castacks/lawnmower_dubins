@@ -43,6 +43,10 @@ public:
     void PublishPatternTrajectory();
     void OdometryCallback(const nav_msgs::Odometry::ConstPtr& odo_msg);
     void SendTrajectoryCallback(const std_msgs::Empty::ConstPtr& msg){
+        if(!_got_odometry){
+            ROS_WARN("Lawn Mower Generator:: Odometry not received!");
+            return;
+        }
         _path.clear();
         PublishPatternTrajectory();
         visualization_msgs::Marker m = GetTrajectoryMarker(_traj);

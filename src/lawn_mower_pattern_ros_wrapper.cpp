@@ -5,12 +5,7 @@
 void ca::LawnMowerPatternROS::TransformTrajectory(lawn_mower_pattern::Trajectory &trajectory, tf::Transform &transform){
     for(size_t i=0;i<trajectory.trajectory.size();i++)
     {
-        CA::Vector3D rpy(0.0,0.0,trajectory.trajectory[i].heading);
-        geometry_msgs::Quaternion q = CA::msgc(CA::eulerToQuat(rpy));
-        ca::tf_utils::transformQuaternion(transform,q);
-        trajectory.trajectory[i].heading = GetHeading(CA::msgc(q));
-
-        ca::tf_utils::transformPoint(transform, trajectory.trajectory[i].position);
+        ca::tf_utils::transformPoint(_transform, trajectory.trajectory[i].position);
     }
 }
 
@@ -33,8 +28,8 @@ visualization_msgs::Marker ca::LawnMowerPatternROS::GetPatternMarker(std::vector
     m.pose.orientation.z = 0.0;
     m.pose.orientation.w = 1.0;
 
-    m.color.r = 0.0; m.color.g = 0.0; m.color.b = 1.0; m.color.a = 1.0;
-    m.scale.x = 1.0; m.scale.y = 0.0; m.scale.z = 0.0;
+    m.color = _color;
+    m.scale.x = _scale; m.scale.y = 0.0; m.scale.z = 0.0;
     for(size_t i=0; i<path.size(); i++)
     {
         geometry_msgs::Point p;
@@ -67,8 +62,8 @@ visualization_msgs::Marker ca::LawnMowerPatternROS::GetTrajectoryMarker(lawn_mow
     m.pose.orientation.z = 0.0;
     m.pose.orientation.w = 1.0;
 
-    m.color.r = 0.0; m.color.g = 0.0; m.color.b = 1.0; m.color.a = 1.0;
-    m.scale.x = 1.0; m.scale.y = 0.0; m.scale.z = 0.0;
+    m.color = _color;
+    m.scale.x = _scale; m.scale.y = 0.0; m.scale.z = 0.0;
     for(size_t i=0; i<trajectory.trajectory.size(); i++)
     {
         geometry_msgs::Point p;
@@ -173,6 +168,8 @@ void ca::LawnMowerPatternROS::Initialize(ros::NodeHandle &n)
     got_param = got_param && n.getParam("temporal_res", temporal_res);
     got_param = got_param && n.getParam("radius", radius);
     got_param = got_param && n.getParam("velocity", velocity);
+    got_param = got_param && n.getParam("altitude", altitude);
+
 
     double r,g,b,a;
     got_param = got_param && n.getParam("scale",_scale);
