@@ -9,6 +9,17 @@ void ca::LawnMowerPatternROS::TransformTrajectory(lawn_mower_pattern::Trajectory
     }
 }
 
+void GetTrajectoryGlobalVelocities(lawn_mower_pattern::Trajectory &trajectory){
+    if(trajectory.trajectory.size()==0)
+        return;
+    Eigen::Vector3d v;
+    v.x()=0.0; v.y()=0.0; v.z()=0.0;
+    trajectory.trajectory[0].velocity = CA::msgc(v);
+    size_t trajectory_size = trajectory.trajectory.size();
+
+    trajectory.trajectory[0].velocity = CA::msgc(v);
+    for(size_t i=1)
+}
 
 visualization_msgs::Marker ca::LawnMowerPatternROS::GetPatternMarker(std::vector<ca::LawnMowerPoint> &path){
     visualization_msgs::Marker m;

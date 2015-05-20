@@ -35,6 +35,7 @@ private:
     double _scale;
     std_msgs::ColorRGBA _color;
     std::string _namespace;
+    void GetTrajectoryGlobalVelocities(lawn_mower_pattern::Trajectory &trajectory);
 public:
     visualization_msgs::Marker GetPatternMarker(std::vector<ca::LawnMowerPoint> &path);
     visualization_msgs::Marker GetTrajectoryMarker(lawn_mower_pattern::Trajectory &trajectory);
