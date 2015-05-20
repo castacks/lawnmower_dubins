@@ -10,6 +10,13 @@ find_package(catkin REQUIRED COMPONENTS
   cmake_modules
   circular_curve_lib
   visualization_msgs
+  geometry_msgs
+  message_generation
+  tf
+  nav_msgs
+  std_msgs
+  ca_common
+  tf_utils
 )
 
 ## System dependencies are found with CMake's conventions
@@ -48,11 +55,11 @@ include_directories(${Eigen_INCLUDE_DIRS})
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+ add_message_files(
+   FILES
+   Trajectory.msg
+   TrajectoryPoint.msg
+ )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -69,10 +76,10 @@ include_directories(${Eigen_INCLUDE_DIRS})
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+ generate_messages(
+   DEPENDENCIES
+   geometry_msgs  # Or other packages containing msgs
+ )
 
 ###################################
 ## catkin specific configuration ##
@@ -86,7 +93,7 @@ include_directories(${Eigen_INCLUDE_DIRS})
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES lawn_mower_pattern
-  CATKIN_DEPENDS math_utils roscpp circular_curve_lib visualization_msgs
+  CATKIN_DEPENDS math_utils roscpp circular_curve_lib visualization_msgs tf nav_msgs std_msgs ca_common tf_utils
 #  DEPENDS system_lib
 )
 
@@ -111,7 +118,11 @@ include_directories(
    src/lawn_mower_pattern_ros_wrapper.cpp
 )
 
+add_dependencies(lawn_mower_pattern_ros_wrapper lawn_mower_pattern_generate_messages_cpp)
+
 add_executable(example src/example.cpp)
+
+add_executable(lawn_mower_pattern_generator src/main.cpp)
 ## Declare a cpp executable
 # add_executable(lawn_mower_pattern_node src/lawn_mower_pattern_node.cpp)
 
@@ -131,6 +142,12 @@ add_executable(example src/example.cpp)
 
 
  target_link_libraries(example
+   ${catkin_LIBRARIES}
+   lawn_mower_pattern
+   lawn_mower_pattern_ros_wrapper
+ )
+
+ target_link_libraries(lawn_mower_pattern_generator
    ${catkin_LIBRARIES}
    lawn_mower_pattern
    lawn_mower_pattern_ros_wrapper
