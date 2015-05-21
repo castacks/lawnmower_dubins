@@ -1,25 +1,37 @@
 #include "lawn_mower_pattern/lawn_mower_pattern_ros_wrapper.h"
 
+void ca::LawnMowerPatternROS::ConvertLocalToGlobalVelocities(lawn_mower_pattern::Trajectory &trajectory){
+    if(trajectory.trajectory.size()==0)
+        return;
+    Eigen::Vector3d v; v.x()=0; v.y()=0; v.z()=0;
+
+    for(size_t i=0; i<trajectory.trajectory.size()-1;i++){
+        Eigen::Vector3d v1 = CA::msgc(trajectory.trajectory[i].position);
+        Eigen::Vector3d v2 = CA::msgc(trajectory.trajectory[i+1].position);
+        Eigen::Vector3d velocity = (v2-v1)/_time_resolution;
+        trajectory.trajectory[i].velocity.x = velocity.x();
+        trajectory.trajectory[i].velocity.y = velocity.y();
+        trajectory.trajectory[i].velocity.z = velocity.z();
+    }
+    trajectory.trajectory[trajectory.trajectory.size()-1].velocity.x = v.x();
+    trajectory.trajectory[trajectory.trajectory.size()-1].velocity.y = v.y();
+    trajectory.trajectory[trajectory.trajectory.size()-1].velocity.z = v.z();
+
+}
 
 
 void ca::LawnMowerPatternROS::TransformTrajectory(lawn_mower_pattern::Trajectory &trajectory, tf::Transform &transform){
     for(size_t i=0;i<trajectory.trajectory.size();i++)
     {
-        ca::tf_utils::transformPoint(_transform, trajectory.trajectory[i].position);
+        CA::Vector3D rpy(0.0,0.0,trajectory.trajectory[i].heading);
+        geometry_msgs::Quaternion q = CA::msgc(CA::eulerToQuat(rpy));
+        ca::tf_utils::transformQuaternion(transform,q);
+        trajectory.trajectory[i].heading = GetHeading(CA::msgc(q));
+
+        ca::tf_utils::transformPoint(transform, trajectory.trajectory[i].position);
     }
 }
 
-void GetTrajectoryGlobalVelocities(lawn_mower_pattern::Trajectory &trajectory){
-    if(trajectory.trajectory.size()==0)
-        return;
-    Eigen::Vector3d v;
-    v.x()=0.0; v.y()=0.0; v.z()=0.0;
-    trajectory.trajectory[0].velocity = CA::msgc(v);
-    size_t trajectory_size = trajectory.trajectory.size();
-
-    trajectory.trajectory[0].velocity = CA::msgc(v);
-    for(size_t i=1)
-}
 
 visualization_msgs::Marker ca::LawnMowerPatternROS::GetPatternMarker(std::vector<ca::LawnMowerPoint> &path){
     visualization_msgs::Marker m;
@@ -104,8 +116,11 @@ lawn_mower_pattern::Trajectory ca::LawnMowerPatternROS::GetPatternTrajectory(std
         tp.velocity.x = path[i].velocity.x();
         tp.velocity.y = path[i].velocity.y();
         tp.velocity.z = path[i].velocity.z();
+        if(_constant_heading)
+            tp.heading = _current_heading;
+        else
+            tp.heading = path[i].heading;
 
-        tp.heading = path[i].heading;
         traj.trajectory.push_back(tp);
     }
 
@@ -119,6 +134,7 @@ void ca::LawnMowerPatternROS::PublishPatternMarker(){
         _traj = GetPatternTrajectory(_path);
     }
     TransformTrajectory(_traj,_transform);
+    ConvertLocalToGlobalVelocities(_traj);
     visualization_msgs::Marker m = GetTrajectoryMarker(_traj);
     _marker_publisher.publish(m);
 }
@@ -129,6 +145,7 @@ void ca::LawnMowerPatternROS::PublishPatternTrajectory(){
         _traj = GetPatternTrajectory(_path);
     }
     TransformTrajectory(_traj,_transform);
+    ConvertLocalToGlobalVelocities(_traj);
     _pattern_publisher.publish(_traj);
 }
 
@@ -147,6 +164,8 @@ void ca::LawnMowerPatternROS::OdometryCallback(const nav_msgs::Odometry::ConstPt
     q_ca = CA::eulerToQuat(v_ca);
     q.setX(q_ca.x()); q.setY(q_ca.y()); q.setZ(q_ca.z()); q.setW(q_ca.w());
     _transform.setRotation(q);
+
+    _current_heading = GetHeading(q_ca);
     _got_odometry = true;
 }
 
@@ -180,8 +199,7 @@ void ca::LawnMowerPatternROS::Initialize(ros::NodeHandle &n)
     got_param = got_param && n.getParam("radius", radius);
     got_param = got_param && n.getParam("velocity", velocity);
     got_param = got_param && n.getParam("altitude", altitude);
-
-
+    _time_resolution = temporal_res;
     double r,g,b,a;
     got_param = got_param && n.getParam("scale",_scale);
     got_param = got_param && n.getParam("r",r);
@@ -189,7 +207,7 @@ void ca::LawnMowerPatternROS::Initialize(ros::NodeHandle &n)
     got_param = got_param && n.getParam("b",b);
     got_param = got_param && n.getParam("a",a);
     got_param = got_param && n.getParam("namespace",_namespace);
-
+    got_param = got_param && n.getParam("constant_heading",_constant_heading);
 
     if(!got_param){
         ROS_ERROR("Lawn mower pattern generator could not get all the parameters.");

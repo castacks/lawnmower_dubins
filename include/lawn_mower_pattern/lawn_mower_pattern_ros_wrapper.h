@@ -35,7 +35,10 @@ private:
     double _scale;
     std_msgs::ColorRGBA _color;
     std::string _namespace;
-    void GetTrajectoryGlobalVelocities(lawn_mower_pattern::Trajectory &trajectory);
+    double _time_resolution;
+    void ConvertLocalToGlobalVelocities(lawn_mower_pattern::Trajectory &trajectory);
+    double _current_heading;
+    bool _constant_heading;
 public:
     visualization_msgs::Marker GetPatternMarker(std::vector<ca::LawnMowerPoint> &path);
     visualization_msgs::Marker GetTrajectoryMarker(lawn_mower_pattern::Trajectory &trajectory);
@@ -63,11 +66,3 @@ public:
 };
 }
 #endif // LAWN_MOWER_PATTERN_ROS_WRAPPER_H
-
-
-// List of todos
-//1. write the function to transform the trajectories  --done
-//2. write callback to accept odometry -- done
-//3. write the callback to publish trajectory --done
-//4. test trajectory following
-//5. Make the heading invariant mode
