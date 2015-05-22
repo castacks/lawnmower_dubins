@@ -6,7 +6,6 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "lawn_mower_pattern_generator");
 
     ros::NodeHandle n("~");
-    ros::Rate loop_rate(10);
     ca::LawnMowerPatternROS lmp;
     lmp.Initialize(n);
     ros::spin();

@@ -117,7 +117,7 @@ lawn_mower_pattern::Trajectory ca::LawnMowerPatternROS::GetPatternTrajectory(std
         tp.velocity.y = path[i].velocity.y();
         tp.velocity.z = path[i].velocity.z();
         if(_constant_heading)
-            tp.heading = _current_heading;
+            tp.heading = 0.0;
         else
             tp.heading = path[i].heading;
 
@@ -165,7 +165,7 @@ void ca::LawnMowerPatternROS::OdometryCallback(const nav_msgs::Odometry::ConstPt
     q.setX(q_ca.x()); q.setY(q_ca.y()); q.setZ(q_ca.z()); q.setW(q_ca.w());
     _transform.setRotation(q);
 
-    _current_heading = GetHeading(q_ca);
+    _current_heading = GetHeading(q_ca);     
     _got_odometry = true;
 }
 
@@ -176,7 +176,7 @@ ca::LawnMowerPatternROS::LawnMowerPatternROS()
 }
 
 void ca::LawnMowerPatternROS::Initialize(ros::NodeHandle &n)
-{
+{    
     double box_x, box_y, altitude, row_distance,temporal_res,radius,velocity;
     box_x = box_y =10; row_distance = 1; temporal_res = 0.3; radius = 1; velocity = 0.2;
     std::string work_frame = "world";
