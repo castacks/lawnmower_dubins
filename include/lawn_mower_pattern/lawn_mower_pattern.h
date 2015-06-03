@@ -3,6 +3,7 @@
 #include "math_utils/math_utils.h"
 #include <vector>
 #include "circular_curve_lib/dubins.h"
+#include "ros/ros.h"
 
 namespace ca{
 
@@ -21,10 +22,18 @@ private:
     double _temporal_resolution;
     double _radius;
     double _velocity;
+	double _acceleration;
     std::vector<Eigen::Vector3d> _path_x_y_heading;
-
+    std::vector<double> _trajectory_time;
+    double GetAcceleration(double distance, double u, double v ){
+        return distance/(v*v - u*u);
+    };
+    std::vector<double> TimeTrajectory(std::vector<LawnMowerPoint> &trajectory);
+    size_t FindTimeBasedID(double time, std::vector<double> &traj_time, size_t start_id);
+    LawnMowerPoint InterpolateWaypoint(double interp, size_t first_id, std::vector<LawnMowerPoint> &trajectory, std::vector<double> time);
 public:
     void GeneratePath(double box_size_x, double box_size_y, double row_distance);
+	void RampVelocityProfile(std::vector<LawnMowerPoint> &path);
     bool GenerateLawnMowerPattern(std::vector<LawnMowerPoint> & path);
     void set_box_size(double x, double y){
         _box_size_x = x; _box_size_y = y;
@@ -45,7 +54,7 @@ public:
         _velocity = param;
     }
 
-    LawnMowerPattern(double box_x, double box_y, double altitude, double row_distance, double temporal_resolution, double radius, double velocity);
+    LawnMowerPattern(double box_x, double box_y, double altitude, double row_distance, double temporal_resolution, double radius, double velocity, double acceleration);
 };
 }
 #endif // LAWN_MOWER_PATTERN_H

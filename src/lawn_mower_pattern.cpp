@@ -1,6 +1,6 @@
 #include "lawn_mower_pattern/lawn_mower_pattern.h"
 
-ca::LawnMowerPattern::LawnMowerPattern(double box_x, double box_y, double altitude, double row_distance, double temporal_resolution, double radius, double velocity){
+ca::LawnMowerPattern::LawnMowerPattern(double box_x, double box_y, double altitude, double row_distance, double temporal_resolution, double radius, double velocity, double acceleration){
     _box_size_x = box_x;
     _box_size_y = box_y;
     _pattern_altitude = altitude;
@@ -8,6 +8,122 @@ ca::LawnMowerPattern::LawnMowerPattern(double box_x, double box_y, double altitu
     _temporal_resolution = temporal_resolution;
     _radius = radius;
     _velocity = velocity;
+	_acceleration = acceleration;
+}
+
+std::vector<double> ca::LawnMowerPattern::TimeTrajectory(std::vector<LawnMowerPoint> &trajectory){
+
+    double t =0;
+    std::vector<double> time;
+    time.push_back(t);
+    for(size_t i=0; i<trajectory.size()-1;i++)
+    {
+         Eigen::Vector3d s = trajectory[i+1].position - trajectory[i].position;
+         double distance = s.norm();
+
+         Eigen::Vector3d v = 0.5*trajectory[i+1].velocity + 0.5*trajectory[i].velocity;
+         double velocity = v.norm();
+         t=t+ distance/velocity;
+         time.push_back(t);
+    }
+
+    return time;
+}
+
+size_t ca::LawnMowerPattern::FindTimeBasedID(double time, std::vector<double> &traj_time, size_t start_id){
+    size_t id=start_id;
+    for(;id<(traj_time.size()-1);id++)
+    {
+        if(traj_time[id]>time)
+            return (id-1);
+    }
+    return id;
+}
+
+ca::LawnMowerPoint ca::LawnMowerPattern::InterpolateWaypoint(double interp, size_t first_id, std::vector<LawnMowerPoint> &trajectory, std::vector<double> time){
+    if(first_id == (trajectory.size()-1))
+        return trajectory[first_id];
+
+
+
+    Eigen::Vector3d s = trajectory[first_id+1].position - trajectory[first_id].position;
+    double distance = s.norm();
+    s.normalize();
+
+    double v = trajectory[first_id+1].velocity.x();
+    double u =  trajectory[first_id].velocity.x();
+
+    double a = (v*v - u*u)/(2*distance);
+    if(distance ==0)
+        a = 0;
+
+    double t = time[first_id+1] - time[first_id];
+    t = t*interp;
+
+    distance = u*t + 0.5*a*t*t;
+    v = u + a*t;
+    ca::LawnMowerPoint lmp;
+    lmp.position = trajectory[first_id].position + s*distance;
+    lmp.velocity.x() = v;
+    lmp.velocity.y() = 0.0; lmp.velocity.z() = 0.0;
+
+    double heading_change =  math_utils::angular_math::TurnDirection (trajectory[first_id+1].heading, trajectory[first_id].heading);
+    lmp.heading = trajectory[first_id].heading + heading_change*interp;
+    return lmp;
+}
+
+void ca::LawnMowerPattern::RampVelocityProfile(std::vector<LawnMowerPoint> &path)
+{
+    if(path.size()==0)
+		return;
+
+	size_t path_size = path.size(); 
+	path[0].velocity.x() = 0.0;
+	// Ramping Up
+    for(size_t i=1; i<path_size; i++){
+        Eigen::Vector3d s = path[i].position - path[i-1].position;
+        double distance = s.norm();
+        double u = path[i-1].velocity.norm();
+        double v = std::sqrt(u*u + 2*_acceleration*distance);
+        path[i].velocity.x() = v;
+		if(path[i].velocity.x() > _velocity)
+			path[i].velocity.x() = _velocity;
+	}
+
+	// Ramping Down
+	path[path_size-1].velocity.x() = 0.0;
+	for(size_t i=path_size-2; i>=0; i--){
+        Eigen::Vector3d s = path[i].position - path[i+1].position;
+        double distance = s.norm();
+        double u = path[i+1].velocity.norm();
+        double v = std::sqrt(u*u + 2*_acceleration*distance);
+        if(v >= path[i].velocity.x())
+			break;
+		else
+			path[i].velocity.x() = v;
+	}
+
+
+    std::vector<LawnMowerPoint> new_path;
+    std::vector<double> new_time = TimeTrajectory(path);
+
+    double end_time = new_time[new_time.size()-1];
+
+    size_t search_start_id = 0;
+    for(double t = 0; t<= end_time; t = t+_temporal_resolution)
+    {
+        size_t id = FindTimeBasedID(t, new_time, search_start_id);
+        search_start_id = id;
+        //ROS_ERROR_STREAM("t::"<<t<<"::id::"<<id<<"::x::"<<path[id].position.x()<<"::vx::"<<path[id].velocity.x());
+        double interp_constant = 0.0;
+        if(id < (path.size()-1))
+            interp_constant = (t - new_time.at(id))/(new_time.at(id+1) - new_time.at(id));
+
+        LawnMowerPoint lmpoint = InterpolateWaypoint(interp_constant, id, path, new_time);
+        //ROS_ERROR_STREAM("OP::"<<t<<"::x::"<<lmpoint.position.x()<<"::vx::"<<lmpoint.velocity.x());
+        new_path.push_back(lmpoint);
+    }
+    path = new_path;
 }
 
 void ca::LawnMowerPattern::GeneratePath(double box_size_x, double box_size_y, double row_distance){
@@ -85,5 +201,6 @@ bool ca::LawnMowerPattern::GenerateLawnMowerPattern(std::vector<LawnMowerPoint> 
         t_offset = t-path_length;
     }
 
+	RampVelocityProfile(path);
     return true;
 }

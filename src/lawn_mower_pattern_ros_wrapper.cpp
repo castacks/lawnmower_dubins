@@ -177,8 +177,9 @@ ca::LawnMowerPatternROS::LawnMowerPatternROS()
 
 void ca::LawnMowerPatternROS::Initialize(ros::NodeHandle &n)
 {    
-    double box_x, box_y, altitude, row_distance,temporal_res,radius,velocity;
+    double box_x, box_y, altitude, row_distance,temporal_res,radius,velocity,acceleration;
     box_x = box_y =10; row_distance = 1; temporal_res = 0.3; radius = 1; velocity = 0.2;
+	acceleration = 0.5;
     std::string work_frame = "world";
     std::string trajectory_topic = "trajectory";
     std::string odo_topic = "odometry";
@@ -198,6 +199,7 @@ void ca::LawnMowerPatternROS::Initialize(ros::NodeHandle &n)
     got_param = got_param && n.getParam("temporal_res", temporal_res);
     got_param = got_param && n.getParam("radius", radius);
     got_param = got_param && n.getParam("velocity", velocity);
+	got_param = got_param && n.getParam("acceleration", acceleration);
     got_param = got_param && n.getParam("altitude", altitude);
     _time_resolution = temporal_res;
     double r,g,b,a;
@@ -216,7 +218,7 @@ void ca::LawnMowerPatternROS::Initialize(ros::NodeHandle &n)
 
     _color.r = r; _color.g = g; _color.b = b; _color.a = a;
 
-    _lawn_mower_pattern = new ca::LawnMowerPattern(box_x,box_y,altitude,row_distance,temporal_res,radius,velocity);
+    _lawn_mower_pattern = new ca::LawnMowerPattern(box_x,box_y,altitude,row_distance,temporal_res,radius,velocity,acceleration);
     _frame = work_frame;
     _pattern_publisher = n.advertise<lawn_mower_pattern::Trajectory>(trajectory_topic, 10);
     _marker_publisher = n.advertise<visualization_msgs::Marker>(visualization_topic, 10);
