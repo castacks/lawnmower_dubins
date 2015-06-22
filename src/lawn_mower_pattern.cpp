@@ -131,12 +131,12 @@ void ca::LawnMowerPattern::GeneratePath(double box_size_x, double box_size_y, do
     x=y=heading=0;
     _path_x_y_heading.clear();
 
-    if(box_size_x >= box_size_y){
+    if(1){//box_size_x >= box_size_y){
         heading = 0.0;
         double prev_x=x;
         double prev_y=y;
         double prev_heading = heading;
-        while (y < box_size_y){
+        while (y <= box_size_y){
             Eigen::Vector3d v(x,y,heading);
             _path_x_y_heading.push_back(v);
             if(x==0 && heading==0){
@@ -170,6 +170,7 @@ void ca::LawnMowerPattern::GeneratePath(double box_size_x, double box_size_y, do
 bool ca::LawnMowerPattern::GenerateLawnMowerPattern(std::vector<LawnMowerPoint> & path){
     path.clear();
     GeneratePath(_box_size_x, _box_size_y, _row_distance);
+
     ca::dubin::DubinPath dubin_path;
     double sampling_distance = _velocity*_temporal_resolution;
     double t_offset=0;
@@ -202,5 +203,6 @@ bool ca::LawnMowerPattern::GenerateLawnMowerPattern(std::vector<LawnMowerPoint> 
     }
 
 	RampVelocityProfile(path);
+
     return true;
 }

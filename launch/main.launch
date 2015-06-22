@@ -14,13 +14,13 @@
 		  <param name="scale" value="0.1" />
 		  <param name="namespace" value="trajectory" />
 
-		  <param name="box_x" value="50.0"/>
+		  <param name="box_x" value="10.0"/>
 		  <param name="box_y" value="15.0" /> 
 		  <param name="row_distance" value="5.0" />
 		  <param name="temporal_res" value="0.1" />
-		  <param name="radius" value="2.0" />
-		  <param name="velocity" value="10.0" />
-		  <param name="acceleration" value="2.0" />
+		  <param name="radius" value="2.5" />
+		  <param name="velocity" value="4.0" />
+		  <param name="acceleration" value="1" />
 		  <param name="altitude" value="0.0" /> 
 		  <param name="constant_heading" value="false" /> 
    </node>
