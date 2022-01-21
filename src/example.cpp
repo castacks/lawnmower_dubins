@@ -13,7 +13,7 @@ int main(int argc, char **argv)
     int count = 0;
     while (ros::ok())
     {
-        lmp.PublishPatternMarker();
+        // lmp.PublishPatternMarker();
         ros::spinOnce();
         loop_rate.sleep();
         ++count;

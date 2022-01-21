@@ -23,6 +23,7 @@ private:
     ros::Subscriber _odo_subscriber;
     ros::Subscriber _publish_trajectory_subscriber;
     tf::Transform _transform;
+    double budget;
     lawn_mower_pattern::Trajectory _traj;
     bool _got_odometry;
     bool _initialized;

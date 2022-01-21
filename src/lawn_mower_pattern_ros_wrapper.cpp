@@ -107,39 +107,43 @@ lawn_mower_pattern::Trajectory ca::LawnMowerPatternROS::GetPatternTrajectory(std
     traj.header.stamp = ros::Time::now();
     traj.header.frame_id = _frame;
 
+    double total_dist_traveled = 0.0;
+    double prev_x = path[0].position.x();
+    double prev_y = path[0].position.y();
+    double prev_z = path[0].position.z();
+
     lawn_mower_pattern::TrajectoryPoint tp;
     for(size_t i=0; i<path.size(); i++){
-        tp.position.x = path[i].position.x();
-        tp.position.y = path[i].position.y();
-        tp.position.z = path[i].position.z();
+        // checking if still within budget
+        double new_dist = sqrt(pow((path[i].position.x() - prev_x), 2) + pow((path[i].position.y() - prev_y), 2) + pow((path[i].position.z() - prev_z), 2));
+        if (total_dist_traveled + new_dist < budget){
+            total_dist_traveled +=  new_dist;
+            tp.position.x = path[i].position.x();
+            tp.position.y = path[i].position.y();
+            tp.position.z = path[i].position.z();
 
-        tp.velocity.x = path[i].velocity.x();
-        tp.velocity.y = path[i].velocity.y();
-        tp.velocity.z = path[i].velocity.z();
-        if(_constant_heading)
-            tp.heading = 0.0;
-        else
-            tp.heading = path[i].heading;
+            tp.velocity.x = path[i].velocity.x();
+            tp.velocity.y = path[i].velocity.y();
+            tp.velocity.z = path[i].velocity.z();
 
-        traj.trajectory.push_back(tp);
+            // updating previous location
+            prev_x = path[i].position.x();
+            prev_y = path[i].position.y();
+            prev_z = path[i].position.z();
+
+            if(_constant_heading)
+                tp.heading = 0.0;
+            else
+                tp.heading = path[i].heading;
+
+            traj.trajectory.push_back(tp);
+        }
     }
 
     return traj;
 }
 
-
-void ca::LawnMowerPatternROS::PublishPatternMarker(){
-    if(_path.size()==0){
-        _lawn_mower_pattern->GenerateLawnMowerPattern(_path);
-        _traj = GetPatternTrajectory(_path);
-    }
-    TransformTrajectory(_traj,_transform);
-    ConvertLocalToGlobalVelocities(_traj);
-    visualization_msgs::Marker m = GetTrajectoryMarker(_traj);
-    _marker_publisher.publish(m);
-}
-
-void ca::LawnMowerPatternROS::PublishPatternTrajectory(){
+void ca::LawnMowerPatternROS::PublishPatternTrajectory(){  
     if(_path.size()==0){
         _lawn_mower_pattern->GenerateLawnMowerPattern(_path);
         _traj = GetPatternTrajectory(_path);
@@ -197,6 +201,7 @@ void ca::LawnMowerPatternROS::Initialize(ros::NodeHandle &n)
     got_param = got_param && n.getParam("box_y", box_y);
     got_param = got_param && n.getParam("row_distance", row_distance);
     got_param = got_param && n.getParam("temporal_res", temporal_res);
+    got_param = got_param && n.getParam("budget", budget);
     got_param = got_param && n.getParam("radius", radius);
     got_param = got_param && n.getParam("velocity", velocity);
 	got_param = got_param && n.getParam("acceleration", acceleration);
