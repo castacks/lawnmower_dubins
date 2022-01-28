@@ -1,7 +1,7 @@
 <!-- /-->
 <launch>
   <node pkg="lawn_mower_pattern" type="lawn_mower_pattern_generator" name="lawn_mower_pattern" output="screen">
-		  <param name="work_frame" value="/world" />
+		  <param name="work_frame" value="world" />
 		  <param name="trajectory_topic" value="/local_planner/trajectory" /> 
 		  <param name="visualization_topic" value="coverage_trajectory" />
 		  <param name="odo_topic" value="/mk_model/odometry" /> 
@@ -18,7 +18,7 @@
 		  <param name="box_y" value="150.0" /> 
 		  <param name="row_distance" value="5.0" />
 		  <param name="temporal_res" value="0.1" />
-		  <param name="budget" value="1000" />
+		  <param name="budget" value="500" />
 		  <param name="radius" value="2.5" />
 		  <param name="velocity" value="4.0" />
 		  <param name="acceleration" value="1" />
