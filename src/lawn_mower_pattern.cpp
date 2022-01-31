@@ -285,6 +285,7 @@ void ca::LawnMowerPattern::clip(std::vector<std::vector<double>> poly_points, in
 // Implement Sutherland–Hodgman algorithm
 void ca::LawnMowerPattern::suthHodgClip(std::vector<std::vector<double>> poly_points, std::vector<std::vector<double>> clipper_points)
 {
+    std::cout << "Hi 7\n";
     //i and k are two consecutive indexes
     for (int i=0; i<clipper_points.size(); i++)
     {
@@ -307,18 +308,17 @@ void ca::LawnMowerPattern::cellDecomposition(std::vector<std::vector<double>> bo
     double x,y,heading;
     x=y=heading=0;
     _path_x_y_heading.clear();
-
+    std::cout << "Hi\n";
     /* sort the boundary and obstacle polygons by x-coords */
     // identify boundary coords by 0  
     for (int i=0; i<boundary_polygon.size(); ++i)
         boundary_polygon[i].push_back(0.0);
-    
+    std::cout << "Hi 2\n";
     // identify obstacle coords by 1
     for (int i=0; i<obstacle_polygons.size(); ++i)
-    {
         for (int j=0; j<obstacle_polygons[i].size(); ++j)
             obstacle_polygons[i][j].push_back(1.0);
-    }
+    std::cout << "Hi 3\n";
     // copy the boundary polygon into a new vector for manipulation
     auto ordered_coords = boundary_polygon;
     
@@ -326,13 +326,22 @@ void ca::LawnMowerPattern::cellDecomposition(std::vector<std::vector<double>> bo
     for (int i=0; i<obstacle_polygons.size(); ++i)
         ordered_coords.insert(ordered_coords.end(), obstacle_polygons[i].begin(), obstacle_polygons[i].end());
 
-
+    std::cout << "Hi 4\n";
     // sort 2D vector based on x-coord in ascending order
     std::sort(ordered_coords.begin(), ordered_coords.end(),
           [](const std::vector<double>& a, const std::vector<double>& b) {
                     return a[0] < b[0];
                     });
-    
+    // printing out the ordered coords 
+    for (int i=0; i<ordered_coords.size(); ++i)
+    {
+        for (int j=0; j<ordered_coords[i].size(); ++j)
+        {
+            std::cout << ordered_coords[i][j] << "::";
+        }
+        std::cout << "\n";
+    }
+    std::cout << "Hi 5\n";
     /* trapezoidal cell decomposition */
     // iterate over ordered_coords and draw a vertical line through every coord
     std::vector<std::vector<double>> cell_coords; 
@@ -400,17 +409,33 @@ void ca::LawnMowerPattern::cellDecomposition(std::vector<std::vector<double>> bo
         coord_backlog = cell_coords;
         cells.push_back(cell_coords);
     }
-
+    std::cout << "###################\n";
+    // printing out the cells 
+    for (int k=0; k<cells.size(); ++k)
+    {
+        for (int i=0; i<cells[k].size(); ++i)
+        {
+            for (int j=0; j<cells[k][i].size(); ++j)
+            {
+                std::cout << cells[k][i][j] << "::";
+            }
+            std::cout << "\n";
+        }
+        std::cout << "#############\n";
+    }
+    std::cout << "Hi 6\n";
     // find obstacle intersects and build adjacency graph
     std::vector<std::vector<int>> cell_adjacency_graph;
-    for (int i=0; i<cells.size(); ++i)
-    {
-        for (int j=0; j<obstacle_polygons.size(); ++j)
+    if (obstacle_polygons.size() > 0)
+        for (int i=0; i<cells.size(); ++i)
         {
-            // cell is clipper, obstacle is polygon
-            suthHodgClip(obstacle_polygons[j], cells[i]);
+            for (int j=0; j<obstacle_polygons.size(); ++j)
+            {
+                // cell is clipper, obstacle is polygon
+                suthHodgClip(obstacle_polygons[j], cells[i]);
+            }
         }
-    }
+    
     
 }
 
