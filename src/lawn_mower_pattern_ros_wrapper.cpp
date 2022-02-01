@@ -1,4 +1,5 @@
 #include "lawn_mower_pattern/lawn_mower_pattern_ros_wrapper.h"
+#include "lawn_mower_pattern/lawn_mower.h"
 
 void ca::LawnMowerPatternROS::ConvertLocalToGlobalVelocities(lawn_mower_pattern::Trajectory &trajectory){
     if(trajectory.trajectory.size()==0)
@@ -151,26 +152,6 @@ void ca::LawnMowerPatternROS::PublishPatternTrajectory(){
     TransformTrajectory(_traj,_transform);
     ConvertLocalToGlobalVelocities(_traj);
     _pattern_publisher.publish(_traj);
-
-    std::vector<std::vector<double>> boundary_polygon;
-    std::vector<std::vector<std::vector<double>>> obstacle_polygons;
-    // clock-wise order
-    boundary_polygon.push_back({-3.5, 1.5});
-    boundary_polygon.push_back({2, 1.5});
-    boundary_polygon.push_back({2, -2});
-    boundary_polygon.push_back({-4, -2});
-
-    // obstacle 1
-    std::vector<std::vector<double>> obstacle;
-    obstacle.push_back({-3, 0.5});
-    obstacle.push_back({-1, 0.5});
-    obstacle.push_back({0, -0.5});
-    obstacle.push_back({-2.5, -0.5});
-    obstacle_polygons.push_back(obstacle);
-
-    _lawn_mower_pattern->cellDecomposition(boundary_polygon, obstacle_polygons, 0.5);
-
-
 }
 
 void ca::LawnMowerPatternROS::OdometryCallback(const nav_msgs::Odometry::ConstPtr& odo_msg){

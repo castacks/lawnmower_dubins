@@ -118,6 +118,10 @@ include_directories(
    src/lawn_mower_pattern_ros_wrapper.cpp
 )
 
+add_library(lawn_mower
+src/lawn_mower.cpp
+)
+
 add_dependencies(lawn_mower_pattern_ros_wrapper lawn_mower_pattern_generate_messages_cpp)
 
 add_executable(example src/example.cpp)

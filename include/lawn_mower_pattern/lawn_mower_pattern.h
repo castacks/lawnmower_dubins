@@ -34,12 +34,7 @@ private:
 public:
     void GeneratePath(double box_size_x, double box_size_y, double row_distance);
     std::vector<std::vector<double>> intersectBoundary(std::vector<std::vector<double>> boundary_polygon, std::vector<double> coord);
-    void cellDecomposition(std::vector<std::vector<double>> boundary_polygon, std::vector<std::vector<std::vector<double>>> obstacle_polygons, double row_distance);
 	void RampVelocityProfile(std::vector<LawnMowerPoint> &path);
-    void suthHodgClip(std::vector<std::vector<double>> poly_points, std::vector<std::vector<double>> clipper_points);
-    void clip(std::vector<std::vector<double>> poly_points, int poly_size, double x1, double y1, double x2, double y2);
-    int x_intersect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4);
-    int y_intersect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4);
     bool GenerateLawnMowerPattern(std::vector<LawnMowerPoint> & path);
     void set_box_size(double x, double y){
         _box_size_x = x; _box_size_y = y;
