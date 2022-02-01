@@ -77,9 +77,12 @@ class LawnMower {
         std::vector<int> getInterNodes(int a, int b);
         void createTrapezoid(std::vector<int> nodes);
         void trapezoidNeighboring();
+        void trapezoidListTraverse(Trapezoid*);
+        void cellCoverage(Trapezoid* );
     public:
         void obtainAllPolygonPoints();
         void cellDecomposition();
+        void coverage();
         void findAvailablePaths(int i);
         std::vector<int> getNextAvailablePaths(int i);
         std::vector<double> hitTest(std::vector<double> p1, std::vector<double> p2, std::vector<std::vector<double>> obstacle);

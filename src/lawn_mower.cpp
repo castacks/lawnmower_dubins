@@ -124,6 +124,39 @@ void lm::LawnMower::cellDecomposition()
     lm::LawnMower::trapezoidNeighboring();
 }
 
+void lm::LawnMower::trapezoidListTraverse(lm::Trapezoid* tr)
+{
+    // traverse adjacency graph
+    if(tr->visited)
+        return;
+    lm::LawnMower::cellCoverage(tr);
+
+    tr->visited = 1;
+
+    // traverse right children
+    if (tr->rightNeighbors.size() > 0)
+        lm::LawnMower::trapezoidListTraverse(tr->rightNeighbors[0]);
+    if (tr->rightNeighbors.size() > 1)
+        lm::LawnMower::trapezoidListTraverse(tr->rightNeighbors[1]);
+    
+
+    // traverse left children
+    if (tr->leftNeighbors.size() > 0)
+        lm::LawnMower::trapezoidListTraverse(tr->leftNeighbors[0]);
+    if (tr->leftNeighbors.size() > 1)
+        lm::LawnMower::trapezoidListTraverse(tr->leftNeighbors[1]);
+}
+
+void lm::LawnMower::cellCoverage(lm::Trapezoid* tr)
+{
+    
+}
+
+void lm::LawnMower::coverage()
+{
+    lm::LawnMower::trapezoidListTraverse(trapezoidList[0]);
+}
+
 bool lm::LawnMower::check_counterclockwise(std::vector<double> pt1, std::vector<double> pt2, std::vector<double> pt3)
 {
     return (pt3[1] - pt1[1]) * (pt2[0] - pt1[0]) > (pt2[1] - pt1[1]) * (pt3[0] - pt1[0]);
