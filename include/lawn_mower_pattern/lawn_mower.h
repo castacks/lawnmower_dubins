@@ -11,9 +11,6 @@ class PolygonPoint {
         std::vector<std::vector<double>> up;
         std::vector<std::vector<double>> down;
 
-        std::vector<double> intPointUp;  // intersection in the upper extension
-        std::vector<double> intPointDown;  // intersection in the lower extension
-
         std::vector<std::vector<double>> intersectsUp;
         std::vector<std::vector<double>> intersectsDown;
 
@@ -26,6 +23,9 @@ class PolygonPoint {
         
         int type;  // in=1, out=2, none=-1
         int edgeExtension;  // up=1, down=2, both=3, none=-1
+
+        std::vector<double> intPointUp;  // intersection in the upper extension
+        std::vector<double> intPointDown;  // intersection in the lower extension
 
         // check for each point, the obstacles the line through that point crosses
         std::vector<std::vector<double>> getObstacleCrossings(std::vector<std::vector<double>> line);
@@ -41,9 +41,10 @@ class Edge {
         std::vector<double> point1;
         std::vector<double> point2;
         std::vector<double> middle;
+        int refp;
         int edge_id;
 
-        Edge(std::vector<double> p1, std::vector<double> p2, std::vector<double> ref);
+        Edge(std::vector<double> p1, std::vector<double> p2, int ref);
         double getLength(std::vector<double> p1, std::vector<double> p2);
 };
 
@@ -55,19 +56,27 @@ class Trapezoid {
     Edge* edge1;
     Edge* edge2;
     std::vector<double> center;
-    std::vector<double> leftNeighbors;
-    std::vector<double> rightNeighbors;
+    std::vector<Trapezoid* > leftNeighbors;
+    std::vector<Trapezoid* > rightNeighbors;
     int visited;
 
     std::vector<double> edge1point;
     std::vector<double> edge2point;
-    Trapezoid(Edge* edge1, Edge* edge2, double average);
+    Trapezoid(Edge* edge1, Edge* edge2, std::vector<double> average);
 };
 
 
 class LawnMower {
     private:
-        PolygonPoint* averagePoint();
+        std::vector<double> averagePoint(std::vector<int> nodes);
+        std::vector<double> averageStartingPoint(std::vector<int> nodes);
+        std::vector<double> averageEndingPoint(std::vector<int> nodes);
+        std::pair<std::vector<double>, Edge*> getEdge(int i, int idx);
+        std::pair<std::vector<double>, Edge*> obtainTrueStartingEdge(std::vector<int> nodes);
+        std::pair<std::vector<double>, Edge*> obtainTrueEndingEdge(std::vector<int> nodes);
+        std::vector<int> getInterNodes(int a, int b);
+        void createTrapezoid(std::vector<int> nodes);
+        void trapezoidNeighboring();
     public:
         void obtainAllPolygonPoints();
         void cellDecomposition();
