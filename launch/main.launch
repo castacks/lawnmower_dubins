@@ -1,9 +1,10 @@
 <!-- /-->
 <launch>
-  <node pkg="lawn_mower_pattern" type="lawn_mower_pattern_generator" name="lawn_mower_pattern" output="screen">
+  <node pkg="lawn_mower_pattern" type="lawn_mower_pattern_node" name="lm_node" output="screen">
 		  <param name="work_frame" value="world" />
 		  <param name="trajectory_topic" value="/local_planner/trajectory" /> 
 		  <param name="visualization_topic" value="coverage_trajectory" />
+		  <param name="environment_topic" value="environment" />
 		  <param name="odo_topic" value="/mk_model/odometry" /> 
 		  <param name="publish_trajectory_topic" value="publish_trajectory" />
 

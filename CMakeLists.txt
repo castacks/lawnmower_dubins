@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(lawn_mower_pattern)
 
 ## Find catkin macros and libraries
@@ -55,11 +55,11 @@ include_directories(${Eigen_INCLUDE_DIRS})
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
- add_message_files(
-   FILES
-   Trajectory.msg
-   TrajectoryPoint.msg
- )
+#  add_message_files(
+#    FILES
+#    Trajectory.msg
+#    TrajectoryPoint.msg
+#  )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -76,10 +76,10 @@ include_directories(${Eigen_INCLUDE_DIRS})
 # )
 
 ## Generate added messages and services with any dependencies listed here
- generate_messages(
-   DEPENDENCIES
-   geometry_msgs  # Or other packages containing msgs
- )
+#  generate_messages(
+#    DEPENDENCIES
+#    geometry_msgs  # Or other packages containing msgs
+#  )
 
 ###################################
 ## catkin specific configuration ##
@@ -109,53 +109,29 @@ include_directories(
 )
 
 ## Declare a cpp library
- add_library(lawn_mower_pattern
-   src/lawn_mower_pattern.cpp
+ add_library(${PROJECT_NAME}
+   src/lawn_mower.cpp
 )
 
+# add_dependencies(lawn_mower_node lawn_mower_pattern_generate_messages_cpp)
 
- add_library(lawn_mower_pattern_ros_wrapper
-   src/lawn_mower_pattern_ros_wrapper.cpp
-)
-
-add_library(lawn_mower
-src/lawn_mower.cpp
-)
-
-add_dependencies(lawn_mower_pattern_ros_wrapper lawn_mower_pattern_generate_messages_cpp)
-
-add_executable(example src/example.cpp)
-
-add_executable(lawn_mower_pattern_generator src/main.cpp)
 ## Declare a cpp executable
-# add_executable(lawn_mower_pattern_node src/lawn_mower_pattern_node.cpp)
+add_executable(${PROJECT_NAME}_node src/lawn_mower_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(lawn_mower_pattern_node lawn_mower_pattern_generate_messages_cpp)
+add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(lawn_mower_pattern
+ target_link_libraries(${PROJECT_NAME}_node
+   ${PROJECT_NAME} 
    ${catkin_LIBRARIES}
 )
 
- target_link_libraries(lawn_mower_pattern_ros_wrapper
-   ${catkin_LIBRARIES}
-   lawn_mower_pattern
- )
-
-
- target_link_libraries(example
-   ${catkin_LIBRARIES}
-   lawn_mower_pattern
-   lawn_mower_pattern_ros_wrapper
- )
-
- target_link_libraries(lawn_mower_pattern_generator
-   ${catkin_LIBRARIES}
-   lawn_mower_pattern
-   lawn_mower_pattern_ros_wrapper
- )
+#  target_link_libraries(lawn_mower_pattern_node
+#    ${catkin_LIBRARIES}
+#   #  lawn_mower_pattern
+#  )
 
 #############
 ## Install ##
