@@ -63,7 +63,7 @@ lm::PolygonPoint::PolygonPoint(std::vector<double> point)
     if (lm::PolygonPoint::intPointUp.size() != 0 && lm::PolygonPoint::intPointDown.size() != 0)  
     {
         lm::PolygonPoint::edgeExtension = 3;
-        lm::PolygonPoint::circle = {lm::PolygonPoint::point[0], lm::PolygonPoint::point[1], /*offset radius*/ 5};
+        lm::PolygonPoint::circle = {/*center x*/ lm::PolygonPoint::point[0],/*center y*/ lm::PolygonPoint::point[1], /*offset radius*/ 5};
 
         std::vector<std::vector<double>> circleIntercepts = lm::PolygonPoint::getCircleCrossings(circle);
         std::vector<double> interceptVector1 = {circleIntercepts[0][0] - lm::PolygonPoint::point[0], circleIntercepts[0][1] - lm::PolygonPoint::point[1]};
@@ -80,6 +80,89 @@ lm::PolygonPoint::PolygonPoint(std::vector<double> point)
     if(lm::PolygonPoint::intPointUp.size()==0 && lm::PolygonPoint::intPointDown.size()==0)
         lm::PolygonPoint::edgeExtension = -1;
 
+}
+
+std::vector<std::vector<double>> lm::PolygonPoint::getCircleCrossings(std::vector<double> circle)
+{
+    std::vector<std::vector<double>> intersects;
+    for (int i=0; i<obstacle_list.size(); ++i)
+    {
+        for (int j=0; j<obstacle_list[i].size(); ++j)
+        {
+            std::vector<double> p1 = obstacle_list[i][j];
+            std::vector<double> p2 = obstacle_list[i][(j+1)%obstacle_list[i].size()];
+            
+            // shifted points
+            std::vector<double> p3 = {p1[0] - circle[0], p1[1] - circle[1]};
+            std::vector<double> p4 = {p2[0] - circle[0], p2[1] - circle[1]};
+
+            double m = (p4[1] - p3[1]) / (p4[0] - p3[0]);  // slope of the line
+            double b = p3[1] - m*p3[0];  // y-intercept of the line
+
+            // value under square root
+            double underRadical = pow((pow(circle[2], 2)*(pow(m, 2) + 1)), 2) - pow(b, 2);
+
+            if(underRadical < 0)
+                ROS_ERROR("NO CIRCLE INTERSECTS");  // polygon side misses circle
+            else
+            {
+                double t1 = (-2*m*b + 2*sqrt(underRadical)) / (2*pow(m, 2) + 2);  // one of the intercept x's
+                double t2 = (-2*m*b - 2*sqrt(underRadical)) / (2*pow(m, 2) + 2);  // other intercept x
+                intersects.push_back({t1, m*t1+b});
+                intersects.push_back({t2, m*t2+b});
+            }
+        }
+    }
+    return intersects;
+}
+
+std::vector<double> lm::PolygonPoint::getClosestIntersect(std::vector<double> point, std::vector<std::vector<double>> intersects)
+{
+    int min_dist = INT_MAX;
+    std::vector<double> closest_pt;
+    for (int i=0; i<intersects.size(); ++i)
+    {
+        double dist = sqrt(pow((point[0]-intersects[i][0]), 2) + pow((point[1]-intersects[i][1]), 2));
+        if (dist<min_dist)
+            closest_pt = intersects[i];
+    }
+    return closest_pt;
+}
+
+bool check_counterclockwise(std::vector<double> pt1, std::vector<double> pt2, std::vector<double> pt3)
+{
+    return (pt3[1] - pt1[1]) * (pt2[0] - pt1[0]) > (pt2[1] - pt1[1]) * (pt3[0] - pt1[0]);
+}
+
+std::vector<std::vector<double>> lm::PolygonPoint::getObstacleCrossings(std::vector<std::vector<double>> line)
+{
+    std::vector<std::vector<double>> intersects;
+    std::vector<double> p1 = line[0];
+    std::vector<double> p2 = line[1];
+    for (int i=0; i<obstacle_list.size(); ++i)
+    {
+        for (int j=0; j<obstacle_list[i].size(); ++j)
+        {
+            if (check_counterclockwise(p1, obstacle_list[i][j], 
+                    obstacle_list[i][(j+1)%obstacle_list[i].size()]) 
+                        != check_counterclockwise(p2, obstacle_list[i][j], 
+                            obstacle_list[i][(j+1)%obstacle_list[i].size()])
+                && check_counterclockwise(p1, p2, 
+                    obstacle_list[i][(j+1)%obstacle_list[i].size()]))
+                {
+                    double m1 = (p2[1] - p1[1]) / (p2[0] - p1[0]);
+                    double m2 = (obstacle_list[i][(j+1)%obstacle_list[i].size()][1] - 
+                        obstacle_list[i][j][1]) / 
+                            (obstacle_list[i][(j+1)%obstacle_list[i].size()][0] - 
+                                obstacle_list[i][j][0]);
+
+                    double xIntercept = (obstacle_list[i][j][1] - p1[1] + m1*p1[0] - m2*obstacle_list[i][j][0]) / (m1 - m2);
+                    double yIntercept = m2*(xIntercept-obstacle_list[i][j][0]) + obstacle_list[i][j][1];
+                    intersects.push_back({xIntercept, yIntercept});
+                }
+        }
+    }
+    return intersects;
 }
 
 void lm::LawnMower::obtainAllPolygonPoints()
@@ -116,12 +199,18 @@ void lm::LawnMower::trapezoidNeighboring()
         }
 }
 
-void lm::LawnMower::cellDecomposition()
+void lm::LawnMower::cellDecomposition(std::vector<std::vector<std::vector<double>>> obsList)
 {
+    obstacle_list = obsList;
     lm::LawnMower::obtainAllPolygonPoints();
     for (int i=0; i<polygonPoints.size(); ++i)
         findAvailablePaths(i);
     lm::LawnMower::trapezoidNeighboring();
+}
+
+std::vector<lm::Trapezoid*> lm::LawnMower::getTrapezoidList()
+{
+    return trapezoidList;
 }
 
 void lm::LawnMower::trapezoidListTraverse(lm::Trapezoid* tr)
@@ -157,19 +246,14 @@ void lm::LawnMower::coverage()
     lm::LawnMower::trapezoidListTraverse(trapezoidList[0]);
 }
 
-bool lm::LawnMower::check_counterclockwise(std::vector<double> pt1, std::vector<double> pt2, std::vector<double> pt3)
-{
-    return (pt3[1] - pt1[1]) * (pt2[0] - pt1[0]) > (pt2[1] - pt1[1]) * (pt3[0] - pt1[0]);
-}
-
 std::vector<double> lm::LawnMower::hitTest(std::vector<double> p1, std::vector<double> p2, std::vector<std::vector<double>> obstacle)
 {
     std::vector<double> collision_pt;
     for (int i=0; i<obstacle.size(); ++i)
     {
-        if (lm::LawnMower::check_counterclockwise(p1, obstacle[i], obstacle[(i+1)%obstacle.size()]) 
-                        != lm::LawnMower::check_counterclockwise(p2, obstacle[i], obstacle[(i+1)%obstacle.size()])
-            && lm::LawnMower::check_counterclockwise(p1, p2, obstacle[(i+1)%obstacle.size()]))
+        if (check_counterclockwise(p1, obstacle[i], obstacle[(i+1)%obstacle.size()]) 
+                        != check_counterclockwise(p2, obstacle[i], obstacle[(i+1)%obstacle.size()])
+            && check_counterclockwise(p1, p2, obstacle[(i+1)%obstacle.size()]))
             {
                 double m1 = (p2[1] - p1[1]) / (p2[0] - p1[0]);
                 double m2 = (obstacle[(i+1)%obstacle.size()][1] - obstacle[i][1]) / (obstacle[(i+1)%obstacle.size()][0] - obstacle[i][0]);

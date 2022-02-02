@@ -81,12 +81,12 @@ class LawnMower {
         void cellCoverage(Trapezoid* );
     public:
         void obtainAllPolygonPoints();
-        void cellDecomposition();
+        void cellDecomposition(std::vector<std::vector<std::vector<double>>> obsList);
         void coverage();
         void findAvailablePaths(int i);
+        std::vector<lm::Trapezoid*> getTrapezoidList();
         std::vector<int> getNextAvailablePaths(int i);
         std::vector<double> hitTest(std::vector<double> p1, std::vector<double> p2, std::vector<std::vector<double>> obstacle);
-        bool check_counterclockwise(std::vector<double> pt1, std::vector<double> pt2, std::vector<double> pt3);
 };
 
 }

@@ -119,6 +119,11 @@ int main(int argc, char **argv)
     ros::NodeHandle n("~");
     ca::LawnMowerPatternROS lmp;
     lmp.Initialize(n);
+
+    lm::LawnMower lawn_mower;
+    lawn_mower.cellDecomposition(polygons1);
+    std::vector<lm::Trapezoid*> trapezoids = lawn_mower.getTrapezoidList();
+
     ros::Rate loop_rate(10);
     while (ros::ok())
     {
