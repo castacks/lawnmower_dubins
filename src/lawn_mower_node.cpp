@@ -67,6 +67,8 @@ void ca::LawnMowerPatternROS::PublishPatternTrajectory(){
 
 void ca::LawnMowerPatternROS::Initialize(ros::NodeHandle &n)
 {    
+    std::cout << "lmp start" << std::endl;
+
     box_x = box_y =10; row_distance = 1; temporal_res = 0.3; radius = 1; velocity = 0.2;
 	acceleration = 0.5;
     std::string work_frame = "world";
@@ -76,6 +78,8 @@ void ca::LawnMowerPatternROS::Initialize(ros::NodeHandle &n)
     std::string environment_topic = "environment";
     std::string publish_trajectory_topic = "publish";
     bool got_param = true;
+
+    std::cout << "strings inited" << std::endl;
 
     got_param = got_param && n.getParam("work_frame", work_frame);
     got_param = got_param && n.getParam("trajectory_topic", trajectory_topic);
@@ -93,6 +97,7 @@ void ca::LawnMowerPatternROS::Initialize(ros::NodeHandle &n)
     got_param = got_param && n.getParam("altitude", altitude);
     _time_resolution = temporal_res;
     double r,g,b,a;
+
     got_param = got_param && n.getParam("scale",_scale);
     got_param = got_param && n.getParam("r",r);
     got_param = got_param && n.getParam("g",g);
@@ -116,12 +121,15 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "lawn_mower_node");
     std::cout << "hello!!" << std::endl;
+    std::cout << "before node handle" << std::endl;
     ros::NodeHandle n("~");
+    std::cout << "after Node Handle" << std::endl;
     ca::LawnMowerPatternROS lmp;
     lmp.Initialize(n);
-
+    std::cout << "lmp initialized" << std::endl;
     lm::LawnMower lawn_mower;
     lawn_mower.cellDecomposition(polygons1);
+    std::cout << "cell decomposition finished" << std::endl;
     std::vector<lm::Trapezoid*> trapezoids = lawn_mower.getTrapezoidList();
 
     ros::Rate loop_rate(10);

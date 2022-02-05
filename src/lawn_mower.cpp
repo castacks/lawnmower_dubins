@@ -9,10 +9,25 @@ std::vector<lm::Trapezoid*> trapezoidList;
 lm::Edge::Edge(std::vector<double> p1, std::vector<double> p2, int ref)
 {
     lm::Edge::point1 = p1;
+    std::cout << "created point 1" << std::endl;
     lm::Edge::point2 = p2;
-    lm::Edge::middle = {(lm::Edge::point1[0] + lm::Edge::point2[0])/2, (lm::Edge::point1[1] + lm::Edge::point2[1])/2};
+    std::cout << "created point 2" << std::endl;
+    for(int i = 0; i<point1.size(); i++){
+        std::cout << point1[i] << std::endl;
+    }
+
+    for(int i = 0; i<point2.size(); i++){
+        std::cout << point2[i] << std::endl;
+    }
+    std::cout << "creating middle" << std::endl;
+    std::cout << point1.size() << std::endl;
+    std::cout << point2.size() << std::endl;
+    lm::Edge::middle = {(lm::Edge::point1[0] + lm::Edge::point2[0])/2, (lm::Edge::point1[1] + lm::Edge::point2[1])/2}; //passing in empty points here!!!!!!!
+    std::cout << "created middle" << std::endl;
     lm::Edge::refp = ref;
+    std::cout << "created refp" << std::endl;
     lm::Edge::edge_id = edge_counter++;
+    std::cout << "created edge_id" << std::endl;
 }
 
 double lm::Edge::getLength(std::vector<double> p1, std::vector<double> p2)
@@ -203,8 +218,12 @@ void lm::LawnMower::cellDecomposition(std::vector<std::vector<std::vector<double
 {
     obstacle_list = obsList;
     lm::LawnMower::obtainAllPolygonPoints();
-    for (int i=0; i<polygonPoints.size(); ++i)
+    std::cout << "obtained points" << std::endl;
+    for (int i=0; i<polygonPoints.size(); ++i){
+        std::cout << i << std::endl;
         findAvailablePaths(i);
+        std::cout << "found path" << std::endl;
+    }
     lm::LawnMower::trapezoidNeighboring();
 }
 
@@ -271,28 +290,47 @@ std::vector<double> lm::LawnMower::hitTest(std::vector<double> p1, std::vector<d
 std::vector<int> lm::LawnMower::getNextAvailablePaths(int i)
 {
     std::vector<int> paths;  // stores all available edges if its "in" type. otherwise return first available one
+    std::cout << "init paths" << std::endl;
     std::vector<double> vector = polygonPoints[i]->vector;
-
+    std::cout << "init vector" << std::endl;
     // find best visible points
     for (int j=i+1; j<polygonPoints.size(); ++j)
     {
+        std::cout << i;
         std::vector<double> pt1 = {polygonPoints[j]->point[0], polygonPoints[j]->point[1]}; // to-point
         std::vector<double> pt2 = {polygonPoints[i]->point[0], polygonPoints[i]->point[1]}; // from-point                                                       
+        std::cout << "pt1 and pt2" << std::endl;
 
         std::vector<double> hit;
-        for (int k=0; obstacle_list.size()-1; ++k)  // except last obstacle as it is the outer boundary
+        std::cout << "obstacle list size ";
+        std::cout << obstacle_list.size()-1 << std::endl;
+        for (int k=0; k < obstacle_list.size()-1; ++k)  // except last obstacle as it is the outer boundary
         {
+            std::cout << k << std::endl;
             hit = lm::LawnMower::hitTest(pt1, pt2, obstacle_list[k]);
+            
+            std::cout << "The vector elements are : ";
+
+            for(int i=0; i < hit.size(); i++)
+                std::cout << hit.at(i) << ' ';
+            std::cout << "" << std::endl;
+
             if (hit.size() > 0)  // if hit==true, there is obstacle between i and j
                 break;
         }
-
+        std::cout << "exited for loop" << std::endl;
         if (hit.size() == 0)  // if no hit, then point visible
         {
-            if (polygonPoints[i]->type==1)
-                paths.push_back(j);  // it is like 6->11, 7 (they are actually determined in the next for)
-            else
+            if (polygonPoints[i]->type==1){
+                paths.push_back(j);
+                std::cout << "pushed back" << std::endl;  // it is like 6->11, 7 (they are actually determined in the next for)
+            }
+                
+            else{
+                std::cout << "returned" << std::endl;
                 return {j};  // it can go like 4->6
+            }
+               
         }
     }
 
@@ -300,7 +338,9 @@ std::vector<int> lm::LawnMower::getNextAvailablePaths(int i)
     for (int k=0; k<paths.size(); ++k)
     {
         auto temp = polygonPoints[paths[k]]->point;
+        std::cout << "got polygon points" << std::endl;
         std::vector<double> p = {temp[0] - polygonPoints[i]->point[0], temp[1] - polygonPoints[i]->point[1]};
+        std::cout << "assigned p" << std::endl;
 
         if ((p[0]*polygonPoints[i]->vector[1] - p[1]*polygonPoints[i]->vector[0]) > 0)  // direction is left
             if (up==INT_MIN) up = paths[k];  // store only first found one
@@ -351,11 +391,31 @@ std::vector<double> lm::LawnMower::averageEndingPoint(std::vector<int> nodes)
 
 std::pair<std::vector<double>, lm::Edge*> lm::LawnMower::getEdge(int i, int idx)
 {
+    std::cout << i << std::endl;
+    std::cout << *polygonPoints[i] << std::endl;
+    std::cout << "POLYGON POINTS" << std::endl;
+    for(int a = 0; a<polygonPoints.size(); a++){
+        std::cout << polygonPoints[a] << std::endl;
+    }
+
     std::vector<double> p = polygonPoints[i]->point;
     std::vector<double> up = polygonPoints[i]->intPointUp;
     std::vector<double> down = polygonPoints[i]->intPointDown;
-    std::pair<std::vector<double>, lm::Edge*> return_pair;
 
+    std::cout << "UPPPPPPP" << std::endl;
+    for(int i = 0; i<up.size(); i++){
+        std::cout << up[i] << std::endl;
+    }
+
+    std::cout << "downnn" << std::endl;
+    for(int i = 0; i<down.size(); i++){
+        std::cout << down[i] << std::endl;
+    }
+
+    std::pair<std::vector<double>, lm::Edge*> return_pair;
+    std::cout << "init all this shit" << std::endl;
+    std::cout << "idx ";
+    std::cout << idx << std::endl;
     if(idx==1)  // if idx==up
     {
         lm::Edge* edge_ptr = new lm::Edge(up, p, i);
@@ -375,6 +435,7 @@ std::pair<std::vector<double>, lm::Edge*> lm::LawnMower::getEdge(int i, int idx)
     // the following is for idx==both
     if (up.size()>0 && down.size()==0)
     {
+        std::cout << "here 1" << std::endl;
         lm::Edge* edge_ptr = new lm::Edge(up, p, i);
         return_pair.first = {};
         return_pair.second = edge_ptr;
@@ -383,6 +444,7 @@ std::pair<std::vector<double>, lm::Edge*> lm::LawnMower::getEdge(int i, int idx)
 
     else if (up.size()==0 && down.size()>0)
     {
+        std::cout << "here 2" << std::endl;
         lm::Edge* edge_ptr = new lm::Edge(p, down, i);
         return_pair.first = {};
         return_pair.second = edge_ptr;
@@ -391,6 +453,7 @@ std::pair<std::vector<double>, lm::Edge*> lm::LawnMower::getEdge(int i, int idx)
 
     else if(up.size()>0 && down.size()>0)
     {
+        std::cout << "here 3" << std::endl;
         lm::Edge* edge_ptr = new lm::Edge(up, down, i);
         return_pair.first = {};
         return_pair.second = edge_ptr;
@@ -399,9 +462,14 @@ std::pair<std::vector<double>, lm::Edge*> lm::LawnMower::getEdge(int i, int idx)
 
     else
     {
-        lm::Edge* edge_ptr = new lm::Edge(up, down, i);
+        std::cout << "fuck this shit" << std::endl;
+        lm::Edge edge = lm::Edge(up, down, i);
+        std::cout << "created edge" << std::endl;
+        lm::Edge* edge_ptr = &edge;
+        std::cout << "created edge ptr" << std::endl;
         return_pair.first = p;  // return points itself
-        return_pair.second = edge_ptr;  // ignore as we want the point, not edge
+        return_pair.second = edge_ptr;
+        std::cout << "returning return pair" << std::endl;  // ignore as we want the point, not edge
         return return_pair;
     }
 }
@@ -410,20 +478,24 @@ std::pair<std::vector<double>, lm::Edge*> lm::LawnMower::obtainTrueStartingEdge(
 {
     int i = nodes[0];
     int j = nodes[nodes.size()-1];
-
+    std::cout << "created i j" << std::endl;
     if(polygonPoints[i]->type==1)
     {
         std::vector<double> averagePoint = lm::LawnMower::averageEndingPoint(nodes);
         std::vector<double> vector = polygonPoints[i]->vector;
         std::vector<double> vector2 = {averagePoint[0] - polygonPoints[i]->point[0], averagePoint[1] - polygonPoints[i]->point[1]};
+        std::cout << "created all vectors" << std::endl;
 
         if(vector[0]*vector2[1] - vector[1]*vector2[0] < 0)
             return lm::LawnMower::getEdge(i, 1);
         else
             return lm::LawnMower::getEdge(i, 2);
     }
-    else
+    else{
+        std::cout << "returning an edge" << std::endl;
         return lm::LawnMower::getEdge(i, 3);
+    
+    }
 }
 
 std::pair<std::vector<double>, lm::Edge*> lm::LawnMower::obtainTrueEndingEdge(std::vector<int> nodes)
@@ -450,12 +522,16 @@ std::vector<int> lm::LawnMower::getInterNodes(int a, int b)
 {
     std::vector<int> interNodes;
     interNodes.push_back(a);
+    std::cout << "pushed back" << std::endl;
     std::vector<int> tempPaths;
     while(polygonPoints[b]->type==-1 && polygonPoints[b]->edgeExtension!=-1)
     {
         interNodes.push_back(b);
+        std::cout << "internodes pushed back" << std::endl;
         tempPaths = lm::LawnMower::getNextAvailablePaths(b);
+        std::cout << "got next available paths" << std::endl;
         b = tempPaths[0];
+        std::cout << "got temp paths 0" << std::endl;
     }
     interNodes.insert(interNodes.end(), tempPaths.begin(), tempPaths.end());
     return interNodes;
@@ -463,11 +539,14 @@ std::vector<int> lm::LawnMower::getInterNodes(int a, int b)
 
 void lm::LawnMower::createTrapezoid(std::vector<int> nodes)
 {
+    std::cout << "creating trapezoid" << std::endl;
     auto edge1 = lm::LawnMower::obtainTrueStartingEdge(nodes);
+    std::cout << "obtained true starting edge" << std::endl;
     lm::Edge* e1;
     if (edge1.first.size()==0)
         e1 = edge1.second;
     auto edge2 = lm::LawnMower::obtainTrueEndingEdge(nodes);
+    std::cout << "obtained true ending edge" << std::endl;
     lm::Edge* e2;
     if (edge2.first.size()==0)
         e2 = edge2.second;
@@ -481,12 +560,22 @@ void lm::LawnMower::createTrapezoid(std::vector<int> nodes)
 void lm::LawnMower::findAvailablePaths(int i)
 {
     auto j = getNextAvailablePaths(i);  // if next point is dead end, it returns empty vector
+    std::cout << "got path" << std::endl;
     if (i!=0 && (j.size()==0 || (polygonPoints[i]->type==-1)))
+    {
+        std::cout << "throwing error" << std::endl;
         ROS_ERROR("DEAD END ENCOUNTERED");
-    if (j.size() == 1)
-        lm::LawnMower::createTrapezoid(lm::LawnMower::getInterNodes(i, j[0]));
+    }
+        
+    if (j.size() == 1){
+        std::cout << "j size = 1" << std::endl;
+        std::vector<int> internodes = lm::LawnMower::getInterNodes(i, j[0]);
+        std::cout << "created internodes" << std::endl;
+        lm::LawnMower::createTrapezoid(internodes);
+    } 
     else
     {
+        std::cout << "j size >= 1" << std::endl;
         lm::LawnMower::createTrapezoid(lm::LawnMower::getInterNodes(i, j[0]));
         lm::LawnMower::createTrapezoid(lm::LawnMower::getInterNodes(i, j[1]));
     }
